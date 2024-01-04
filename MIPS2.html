@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MIPS Simulator</title>
+    <style>
+
+      /* Reset default margin and padding */
+body, h1, h2, p, button, textarea, pre {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    text-align: center;
+}
+
+header {
+    background-color: rgb(2, 25, 34);
+    color: #fff;
+    padding: 20px;
+}
+
+header h1 {
+    font-size: 24px;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.input-section, .controls-section, .output-section {
+    background-color: rgb(2, 25, 34);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 10px;
+    width: 55%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 600px;
+}
+
+.input-section h2, .output-section h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+textarea {
+    width: 90%;
+    height: 200px;
+    border: 7px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+}
+
+button {
+    background-color: rgb(96, 167, 226);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+footer {
+    background-color: rgb(2, 25, 34);
+    color: #fff;
+    padding: 10px 0;
+}
+
+
+
+.input-section{
+    width: 55%;
+    height: 300px;
+    margin-right: 600px;
+}
+
+pre {
+    display: block;
+    font-family: monospace;
+    white-space: pre;
+    margin: 1em 0px;
+    color:#fff;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .input-section, .controls-section, .output-section {
+        width: 95%;
+    }
+}
+
+    </style>
+  </head>
+  <body>  
+    <header>
+      <h1>MIPS Simulator</h1>
+    </header>
+    <main>
+      <main>
+        <section class="controls-section">
+          <button class="button" onclick="AssembleMips()">
+            <p>Assemble</p>
+          </button>
+          <button class="button" onclick="Run()">
+            <p>RUN</p>
+          </button>
+          <button class="reset-button">
+            <p>Reset</p>
+          </button>
+        </section>
+        
+
+      
+      <section class="input-section">
+        <h2 class="mips-text">Input MIPS Code</h2>
+        <textarea
+          id="mips-code"
+          placeholder="Enter MIPS32 assembly code here..."
+        ></textarea>
+      </section>
+      <section class="output-section">
+        <h2>Simulation Output</h2>
+        <pre id="output"></pre>
+      </section>
+    </main>
+    <footer>
+      <p>&copy; 2023 CS3520</p>
+    </footer>
+    <script>
+class Assembler {
+      assembleFromString(code) {
+        const lines = code.split('\n');
+        const machineCodeLines = lines
+          .map(line => this.generateMachineCode(this.tokenize(line)))
+          .filter(machineCode => machineCode !== "");
+        return machineCodeLines.join("\n");
+      }
+
+      tokenize(line) {
+        return line.split(/\s+/).filter(token => token !== "");
+      }
+
+      generateMachineCode(tokens) {
+        if (tokens.length !== 4 || !tokens[1].startsWith('$') || !tokens[2].startsWith('$') || !tokens[3].startsWith('$')) {
+          console.error("Invalid format for operation:", tokens.join(" "));
+          return "";  // Invalid format
+        }
+
+        let opcode, rs, rt, rd, funct;
+
+        try {
+          if (tokens[0] === "add") {
+            opcode = "001100";
+            funct = "000000";
+          } else if (tokens[0] === "sub") {
+            opcode = "001101";
+            funct = "001101";
+
+          }else if (tokens[0] === "div") {
+            opcode = "001110";
+            funct = "001110";
+
+          }else if (tokens[0] === "beq") {
+            opcode = "001000";
+            funct = "001000";
+
+
+          }else if (tokens[0] === "LW") {
+            opcode = "001010";
+            funct = "001010";
+
+          }else if (tokens[0] === "SW") {
+            opcode = "001011";
+            funct = "001011";
+
+          }else if (tokens[0] === "jump") {
+              opcode = "001111";
+              funct = "001111";
+
+          } else {
+            console.error("Unsupported operation:", tokens[0]);
+            return "";  // Unsupported operation
+          }
+
+          rd = "0000"; // Replace with registerMap[tokens[1]];
+          rs = "0001"; // Replace with registerMap[tokens[2]];
+          rt = "0010"; // Replace with registerMap[tokens[3]];
+        } catch (e) {
+          console.error("Error:", e.message);
+          console.error("Debug info: tokens=", tokens.join(" "),
+            ", opcodeMap=", opcodeMap[tokens[0]],
+            ", registerMap[rd]=", registerMap[tokens[1]],
+            ", registerMap[rs]=", registerMap[tokens[2]],
+            ", registerMap[rt]=", registerMap[tokens[3]]);
+          return "";  // Error in map access
+        }
+
+        return opcode + rs + rt + rd;
+      }
+    }
+
+    function Run()
+    {
+      
+    }
+
+
+    function AssembleMips() {
+      const assembler = new Assembler();
+      const mipsCode = document.getElementById("mips-code").value;
+      const machineCode = assembler.assembleFromString(mipsCode);
+      document.getElementById("output").textContent = "Generated Machine Code:\n" + machineCode;
+    }
+
+
+    </script>
+  </body>
+</html>
